@@ -53,10 +53,8 @@
       </a>
       <nav class="desktop-nav" aria-label="主导航">
         <a href="#home">首页</a><a href="#features">导航</a><a href="#sponsors">赞助榜</a>
-<!--        <a href="search.html">Bing 搜索</a>-->
       </nav>
       <div class="top-actions">
-        <a class="icon-btn search-button" href="search.html" title="打开 Bing 搜索" aria-label="打开 Bing 搜索">⌕<span>搜索</span></a>
         <button class="icon-btn" type="button" @click="toggleCompact" :title="compact ? '恢复完整显示' : '切换精简显示'">{{ compact ? '展开' : '精简' }}</button>
         <button class="icon-btn theme-button" type="button" @click="cycleTheme" :title="`当前主题：${themeLabel}`">
           <span aria-hidden="true">{{ themeIcon }}</span><span class="theme-label">{{ themeLabel }}</span>
