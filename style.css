@@ -21,7 +21,7 @@ a { color: inherit; text-decoration: none; }
 .desktop-nav { display: flex; gap: 38px; font-size: 14px; font-weight: 600; }
 .desktop-nav a { opacity: .75; transition: .2s; }.desktop-nav a:hover { opacity: 1; color: var(--accent); }
 .top-actions { display: flex; gap: 8px; }.icon-btn { border: 0; background: rgba(255,255,255,.38); border-radius: 13px; padding: 10px 13px; cursor: pointer; font-size: 13px; }.search-button { display: none; align-items: center; gap: 5px; }.theme-button { display: flex; gap: 6px; }
-main { max-width: 1320px; margin: auto; padding-top: 92px; }
+main { max-width: 1320px; margin: auto; padding-top: 48px; }
 .hero { min-height: calc(100vh - 92px); display: grid; grid-template-columns: 1.06fr .94fr; align-items: center; gap: clamp(32px,7vw,110px); padding: 70px 3%; }
 .hero-copy { max-width: 680px; }.eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: .12em; display: flex; align-items: center; gap: 9px; }.eyebrow i { width: 24px; height: 2px; background: var(--accent); }
 h1 { font-size: clamp(46px,5.9vw,86px); line-height: 1.08; letter-spacing: -.055em; margin: 20px 0 24px; font-weight: 900; }h1 span { color: var(--accent); }
