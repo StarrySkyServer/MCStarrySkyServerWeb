@@ -1,241 +1,115 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="zh-CN">
 <head>
-	<link rel="icon" href="img/logo.ico">
-	<link rel="stylesheet" href="css/index.css">
-	<title>Minecraft 星空基岩服官方网站</title>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport"
-		content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<!-- <script src="https://cdn.staticfile.net/vue/2.2.2/vue.min.js"></script>
-	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-	<script src="https://cdn.staticfile.net/jquery/1.10.2/jquery.min.js"></script> -->
-	<script>
-		var x001 = false;
-		var x23424 = true;
-		var z4545 = setInterval(function () {
-			if (x23424) {
-				document.getElementById('loading1').style.color = "rgba(0, 0, 0, 0)";
-				x23424 = !x23424;
-			} else {
-				document.getElementById('loading1').style.color = "rgba(0, 0, 0, 1)";
-				x23424 = !x23424;
-			}
-		}, 1000);
-		function showwy() {
-			clearInterval(z4545);
-			var loading1 = document.getElementById('loading1');
-			var loading = document.getElementById('loading');
-			loading1.style.color = "rgba(0, 0, 0, 0)";
-			loading.style.backgroundColor = "rgba(255, 255, 255, 0)";
-			setTimeout(function () {
-				document.getElementById('loading1').remove();
-				document.getElementById('loading').remove();
-				x001 = true;
-			}, 1000);
-		}
-		// 监听window的load事件 undefined
-		let executed = false;
-
-		window.addEventListener('DOMContentLoaded', () => {
-			if (!executed) {
-				showwy();
-				executed = true;
-			}
-		});
-
-		setTimeout(() => {
-			if (!executed) {
-				showwy();
-				executed = true;
-			}
-		}, 10000);
-	</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#eaf5ff">
+  <meta name="description" content="MC 星空服务器官网，查看服务器状态并加入基岩版服务器。">
+  <title>MC 星空服务器</title>
+  <link rel="icon" href="img/logo.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
-
 <body>
-	<div class="container" id="loading">
-		<div class="loader" id="loading1">请稍等...</div>
-	</div>
-	<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-	<script src="https://cdn.staticfile.net/vue/2.2.2/vue.min.js"></script>
-	<script src="https://cdn.staticfile.org/axios/0.18.0/axios.min.js"></script>
-	<!-- <script src="js/jquery.min.js"></script>
-	<script src="js/axios.min.js"></script>
-	<script src="js/vue.min.js"></script> -->
+  <div id="app" v-cloak :class="['site-shell', { compact }]">
+    <div class="background" :style="{ backgroundImage: `url('${backgroundUrl}')` }"></div>
+    <div v-show="!compact" class="background-tint"></div>
 
-	<script src="js/autombpc.js"></script>
+    <header class="topbar glass">
+      <a class="brand" href="#home" aria-label="返回首页">
+        <img src="img/Starry sky logo air.png" alt="星空服务器 Logo">
+        <span>MC 星空服务器</span>
+      </a>
+      <nav class="desktop-nav" aria-label="主导航">
+        <a href="#home">首页</a><a href="#features">导航</a><a href="#sponsors">赞助榜</a>
+<!--        <a href="search.html">Bing 搜索</a>-->
+      </nav>
+      <div class="top-actions">
+        <a class="icon-btn search-button" href="search.html" title="打开 Bing 搜索" aria-label="打开 Bing 搜索">⌕<span>搜索</span></a>
+        <button class="icon-btn" type="button" @click="toggleCompact" :title="compact ? '恢复完整显示' : '切换精简显示'">{{ compact ? '展开' : '精简' }}</button>
+        <button class="icon-btn theme-button" type="button" @click="cycleTheme" :title="`当前主题：${themeLabel}`">
+          <span aria-hidden="true">{{ themeIcon }}</span><span class="theme-label">{{ themeLabel }}</span>
+        </button>
+      </div>
+    </header>
 
-	<div class="bj">
-		<div id="darkbg">
-			<div class="tips"></div>
-			<div class="title_bar">
-				<div class="logo shadow">
-					<div>StarrySky</div>
-				</div>
-				<div id="timeshow" class="shadow">
-					<div id="time">14:00:00</div>
-				</div>
-				<div class="button3 shadow themeset">
-					<svg t="1715869464572" class="icon" viewBox="0 0 1024 1024" version="1.1"
-						xmlns="http://www.w3.org/2000/svg" p-id="2929" xmlns:xlink="http://www.w3.org/1999/xlink"
-						width="30" height="30">
-						<path
-							d="M512 938.666667c235.648 0 426.666667-191.018667 426.666667-426.666667S747.648 85.333333 512 85.333333 85.333333 276.352 85.333333 512s191.018667 426.666667 426.666667 426.666667z m0-64v-725.333334a362.666667 362.666667 0 0 1 0 725.333334z"
-							fill="#515151" p-id="2930"></path>
-					</svg>
-					<div class="theme shadow">
-						<div class="t0">自动切换</div>
-						<div class="t1">浅色主题</div>
-						<div class="t2">暗色主题</div>
-					</div>
-				</div>
-				<div class="button3 shadow concise">
-					<svg t="1716192469036" class="icon" viewBox="0 0 1024 1024" version="1.1"
-						xmlns="http://www.w3.org/2000/svg" p-id="3695" width="30" height="35">
-						<path
-							d="M512.059863 128.200824c-247.02407 0-447.455985 286.674115-447.455985 297.422923 0 10.06524 200.430892 296.739355 447.455985 296.739355 247.661589 0 444.930465-299.42758 448.089411-296.739355C963.431018 427.620217 759.722476 128.200824 512.059863 128.200824L512.059863 128.200824zM887.121028 425.600211c-2.670829-2.490727-165.422564 233.341443-375.040698 233.341443-239.940744 0-374.508579-233.341443-374.508579-233.341443s165.434843-233.979986 374.508579-233.979986C721.697441 191.620225 889.898281 427.438069 887.121028 425.600211L887.121028 425.600211zM510.116605 309.400722c-59.101049 0-106.875123 49.619094-106.875123 111.343901 0 61.363579 47.775096 111.347994 106.875123 111.347994 59.448974 0 107.225093-49.984415 107.225093-111.347994C617.341698 359.019817 569.565579 309.400722 510.116605 309.400722L510.116605 309.400722zM510.116605 309.400722"
-							fill="#272636" p-id="3696"></path>
-					</svg>
-				</div>
-				<div class="button3 shadow music">
-					<svg t="1731937243807" class="icon" viewBox="0 0 1024 1024" version="1.1"
-						xmlns="http://www.w3.org/2000/svg" p-id="3695" width="30" height="35">
-						<path
-							d="M704 844.586667a384 384 0 1 1-98.773333-704l-131.2 75.733333A293.12 293.12 0 0 0 362.666667 253.44 298.666667 298.666667 0 1 0 770.56 362.666667a294.826667 294.826667 0 0 0-98.56-102.4l55.04-65.92A384 384 0 0 1 704 844.586667zM641.28 544a149.333333 149.333333 0 1 1-141.226667-74.666667l-92.586666-159.786666 73.813333-42.666667L721.92 128 533.333333 355.2z m-73.813333 42.666667A64 64 0 0 0 512 554.666667a62.293333 62.293333 0 0 0-31.786667 8.533333A64 64 0 0 0 512 682.666667a62.506667 62.506667 0 0 0 31.786667-8.746667 64 64 0 0 0 23.466666-87.253333z"
-							fill="#272636" p-id="3696"></path>
-					</svg>
-				</div>
-			</div>
-			<div class="mian">
-				<div class="box1">
-					<img class="shadow" src="img/Starry sky logo air.png" alt="加载失败">
-					<div id="players_num" class="shadow">
-						<span class="value1" id="players_online">{{ online }}</span>
-						<span class="value1" v-if="online == null">...</span>
-						<span class="gwjzx"> 个玩家在线</span>
-						<div class="button1 shadow jiaruyouxi">加入游戏</div>
-					</div>
-					<div class="box1_1 shadow">
-						<svg t="1715592761628" class="icon qyz" viewBox="0 0 1024 1024" version="1.1"
-							xmlns="http://www.w3.org/2000/svg" p-id="3638" xmlns:xlink="http://www.w3.org/1999/xlink"
-							width="25" height="25">
-							<path
-								d="M652.501333 149.034667l60.330667 60.330666-301.696 301.696 301.696 301.696-60.330667 60.352L320.64 541.226667l30.165333-30.186667-30.165333 30.186667-30.186667-30.186667 362.026667-362.026667z"
-								p-id="3639" fill="#515151"></path>
-						</svg>
-						<svg t="1715592848252" class="icon xz" viewBox="0 0 1024 1024" version="1.1"
-							xmlns="http://www.w3.org/2000/svg" p-id="1918" xmlns:xlink="http://www.w3.org/1999/xlink"
-							width="25" height="25">
-							<path
-								d="M469.333333 561.344V106.666667h85.333334v454.72l120.704-120.704 60.330666 60.330666-223.68 223.701334-223.68-223.701334 60.330667-60.330666L469.333333 561.344zM213.333333 832v-85.333333H128v170.666666h768v-170.666666h-85.333333v85.333333H213.333333z"
-								p-id="1919" fill="#515151"></path>
-						</svg>
-						<svg t="1715592816095" class="icon hyz" viewBox="0 0 1024 1024" version="1.1"
-							xmlns="http://www.w3.org/2000/svg" p-id="1486" xmlns:xlink="http://www.w3.org/1999/xlink"
-							width="25" height="25">
-							<path
-								d="M371.498667 873.109333l-60.330667-60.330666 301.696-301.717334L311.168 209.365333l60.330667-60.330666L703.36 480.896l-30.165333 30.165333 30.165333-30.165333 30.186667 30.165333-362.026667 362.026667z"
-								p-id="1487" fill="#515151"></path>
-						</svg>
-					</div>
-				</div>
+    <transition name="content-fade">
+    <main v-show="!compact">
+      <section id="home" class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><i></i> 基岩版 · 生存社区服</div>
+          <h1>从方块开始，<br><span>写下你的星空故事。</span></h1>
+          <p>一个轻松、友善且长期开放的 Minecraft 玩家社区。带上朋友，从第一块木头开始新的冒险。</p>
+          <div class="server-card glass-strong">
+            <div class="status-row">
+              <span :class="['status-dot', { online: serverStatus.online }]"></span>
+              <strong>{{ serverStatus.online ? '服务器运行中' : serverStatus.loading ? '正在获取状态' : '状态暂不可用' }}</strong>
+              <span class="players" v-if="serverStatus.online">{{ serverStatus.players }} / {{ serverStatus.max }} 在线</span>
+            </div>
+            <div class="address-row">
+              <div><small>服务器地址</small><b>{{ serverHost }}</b></div>
+              <div><small>端口</small><b>{{ serverPort }}</b></div>
+              <button type="button" class="copy-btn" @click="copyAddress">{{ copied ? '已复制' : '复制地址' }}</button>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <a class="primary-btn" :href="minecraftUrl">启动 Minecraft</a>
+            <a class="secondary-btn" href="#features">浏览更多</a>
+          </div>
+        </div>
+        <aside class="hero-orbit" aria-label="服务器展示">
+          <div class="orbit-line orbit-one"></div><div class="orbit-line orbit-two"></div>
+          <div class="planet-card glass-strong">
+            <img src="img/Starry sky logo.jpg" alt="MC 星空服务器">
+            <div><span>STAR SYSTEM</span><strong>一起仰望<br>同一片星空</strong></div>
+          </div>
+          <div class="floating-note glass">自由生存 <span>·</span> 和谐社区</div>
+        </aside>
+      </section>
 
-				<div class="box2">
-					<div id="showip" class="shadow">IP：mc.szzz666.top &nbsp &nbsp &nbsp 端口：19132
-						<svg t="1715597919186" class="icon" viewBox="0 0 1024 1024" version="1.1"
-							xmlns="http://www.w3.org/2000/svg" p-id="2194" xmlns:xlink="http://www.w3.org/1999/xlink"
-							width="30" height="30">
-							<path
-								d="M810.666667 170.666667H426.666667V85.333333h384a85.333333 85.333333 0 0 1 85.333333 85.333334v469.333333h-85.333333V170.666667zM128 341.333333a85.333333 85.333333 0 0 1 85.333333-85.333333h426.666667c47.04 0 85.333333 38.037333 85.333333 85.269333v512.234667A85.12 85.12 0 0 1 640.064 938.666667H213.248A85.248 85.248 0 0 1 128 853.333333V341.333333z m512 0H213.333333v512h426.666667V341.333333z"
-								p-id="2195" fill="#515151"></path>
-						</svg>
-					</div>
-					<!-- <div id="copy_i"><img src="svg/copy.svg" alt="0"></div> -->
-					<iframe
-						src="//player.bilibili.com/player.html?isOutside=true&aid=1856422664&bvid=BV1qW42197XN&cid=1623522029&p=1"
-						scrolling="on" frameborder="on" framespacing="0" allowfullscreen="true" id="bilibili"
-						class="shadow"></iframe>
-				</div>
+      <section id="features" class="content-section full-content">
+        <div class="section-heading"><div><span>QUICK ACCESS</span><h2>探索星空</h2></div><p>在这里找到冒险所需的一切</p></div>
+        <div class="link-grid">
+          <a v-for="link in links" :key="link.title" :href="link.url" target="_blank" rel="noopener noreferrer" class="link-card glass">
+            <span class="link-icon">{{ link.icon }}</span><div><h3>{{ link.title }}</h3><p>{{ link.description }}</p></div><b>↗</b>
+          </a>
+        </div>
+      </section>
 
-				<div class="box3">
-					<div class="scroll_bar shadow">
-						<div class="app">
-							<div class="button2 shadow liaotian">聊天</div>
-							<!-- <div class="button2 shadow xzapp">APP</div>
-							<div class="button2 shadow zhuangtai">状态</div> -->
-							<div class="button2 shadow download">下载</div>
-							<div class="button2 shadow fankui">反馈</div>
-							<div class="button2 shadow zangzhu">赞助</div>
-							<div class="button2 shadow pindao">频道</div>
-							<div class="button2 shadow qqqun">QQ群</div>
-							<div class="button2 shadow xieguan">协管</div>
-							<div class="button2 shadow yule">其他</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="masking">
-				<div class="popup shadow">
-					<svg t="1716201635617" class="icon" viewBox="0 0 1024 1024" version="1.1"
-						xmlns="http://www.w3.org/2000/svg" p-id="2781" width="30" height="30">
-						<path
-							d="M1022.583467 127.803733 894.779733 0 511.291733 383.4624 127.8464 0 0 127.803733 383.496533 511.274667 0 894.737067 127.8464 1022.5408 511.291733 639.0784 894.779733 1022.5408 1022.583467 894.737067 639.138133 511.274667Z"
-							fill="#272636" p-id="2782"></path>
-					</svg>
+      <section class="content-section media-section full-content">
+        <div class="video-card glass">
+          <div class="card-title"><div><span>FEATURED</span><h2>服务器宣传片</h2></div></div>
+          <div class="video-player">
+            <iframe src="https://player.bilibili.com/player.html?isOutside=true&amp;aid=116081473815291&amp;bvid=BV1BRZgBzEHC&amp;cid=36110600665&amp;p=1" title="MC 星空服务器宣传片" scrolling="no" frameborder="0" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div id="sponsors" class="sponsor-card glass">
+          <div class="card-title"><div><span>HALL OF THANKS</span><h2>星空赞助榜</h2></div><b>{{ sponsors.length }} 位</b></div>
+          <div class="sponsor-list">
+            <div v-for="(sponsor, index) in sponsors" :key="`${sponsor.name}-${index}`" class="sponsor-item">
+              <span :class="['rank', `rank-${index + 1}`]">{{ index + 1 }}</span><strong>{{ sponsor.name }}</strong><b>¥ {{ formatAmount(sponsor.amount) }}</b>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    </transition>
 
-					<div id="fwqcx">
-						<div class="zt shadow">
-							<h3>星空游戏：</h3>
-							<div v-if="!online" style="color: red; font-size: 50px;">离线</div>
-							<div v-if="online" v-html="motd" class="motd"></div>
-							<div v-if="online">在线玩家数：{{players_online - players_online2}}/{{players_max}}</div>
-							<div v-if="online">最高游戏版本：{{version}}</div>
-							<!-- <div v-if="online">延迟：{{ping_time}}</div> -->
-						</div>
-						<div class="zt shadow">
-							<h3>星空生存：</h3>
-							<div v-if="!online2" style="color: red; font-size: 50px;">离线</div>
-							<div v-if="online2" v-html="motd2" class="motd"></div>
-							<div v-if="online2">在线玩家数：{{players_online2}}/{{players_max2}}</div>
-							<div v-if="online2">最高游戏版本：{{version2}}</div>
-							<!-- <div v-if="online">延迟：{{ping_time2}}</div> -->
-						</div>
-						<!-- <div class="button2 shadow">刷新</div> -->
-					</div>
-
-					<div class="zzb">
-						<h2>感谢以下大佬的赞助！</h2>
-						<ol style="color: gold;" id="dataList">
-							<li v-for="sponsor_data in sponsor_datas">
-								<span style="color: gold;">{{ sponsor_data.name }} </span>
-								<span style="color: red;"> {{ sponsor_data.amount }} </span>RMB
-							</li>
-						</ol>
-						<h2>若你也愿意支持，请扫描下面二维码（左边微信，右边支付宝）&nbsp &nbsp赞助完成后请联系服主，让你榜上有名~</h2>
-						<img src="img/wxzf.jpg" alt="加载失败">
-						<img src="img/zfbzf.jpg" alt="加载失败">
-					</div>
-					<div class="useiframe">
-						<iframe src="loading.html" width="1080px" height="645px" frameborder="on"></iframe>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="bottom"><a
-			href="https://github.com/szzz666/StarrySkyServerOfficialWebsite/">Github网站源码</a><br>网站备案：湘ICP备2023017619号
-	</div>
+    <div class="utility-bar glass">
+      <button type="button" @click="previousBackground" title="上一张背景">←</button>
+      <button type="button" @click="nextBackground" title="随机背景">换一张</button>
+      <button type="button" @click="downloadBackground" title="下载当前背景">下载</button>
+      <span></span>
+      <button type="button" @click="toggleMusic" :title="musicPlaying ? '暂停音乐' : '播放音乐'">{{ musicPlaying ? '暂停音乐' : '播放音乐' }}</button>
+    </div>
+    <audio ref="audio" src="data/c.mp3" loop preload="metadata" @play="musicPlaying = true" @pause="musicPlaying = false"></audio>
+    <div v-if="toast" class="toast">{{ toast }}</div>
+    <footer>© {{ new Date().getFullYear() }} MC 星空服务器 · mc.szzz666.top:19132</footer>
+  </div>
 </body>
-<script src="js/clickevent.js"></script>
-<script src="js/getonline3.js"></script>
-<script src="js/autosetcss.js" class="autosetcss"></script>
-<script src="js/music.js"></script>
-<script src="js/setbg.js"></script>
-<script src="js/message.js"></script>
-<script src="js/sponsor.js"></script>
-<script src="js/time.js"></script>
-
 </html>
