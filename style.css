@@ -78,3 +78,34 @@ h1 { font-size: clamp(46px,5.9vw,86px); line-height: 1.08; letter-spacing: -.055
 @keyframes bar-enter { from { opacity: 0; transform: translate(-50%,25px); } to { opacity: 1; transform: translate(-50%,0); } }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%,-10px) scale(.96); } to { opacity: 1; transform: translate(-50%,0) scale(1); } }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; transition: none !important; } }
+
+.sponsor-link { color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(5,18,34,.5); backdrop-filter: blur(12px); }
+.sponsor-modal { position: relative; width: min(720px,100%); max-height: calc(100vh - 40px); overflow: auto; padding: clamp(25px,4vw,42px); border-radius: 30px; text-align: center; }
+.modal-close { position: absolute; top: 14px; right: 14px; width: 38px; height: 38px; border: 0; border-radius: 12px; color: inherit; background: rgba(255,255,255,.35); cursor: pointer; font-size: 25px; line-height: 1; transition: transform .25s ease, background .25s ease; }
+.modal-close:hover { transform: rotate(90deg); background: rgba(255,255,255,.55); }
+.modal-kicker { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .2em; }
+.sponsor-modal h2 { margin: 7px 0 8px; font-size: clamp(25px,4vw,34px); }
+.sponsor-modal > p { margin: 0 auto 26px; max-width: 520px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.qr-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.qr-grid figure { margin: 0; padding: 14px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.28); }
+.qr-grid img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 14px; background: white; }
+.qr-grid figcaption { display: flex; flex-direction: column; gap: 3px; margin-top: 12px; }
+.qr-grid figcaption span { color: var(--muted); font-size: 12px; }
+.modal-fade-enter-active,.modal-fade-leave-active { transition: opacity .35s ease; }
+.modal-fade-enter-active .sponsor-modal,.modal-fade-leave-active .sponsor-modal { transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .3s ease; }
+.modal-fade-enter-from,.modal-fade-leave-to { opacity: 0; }
+.modal-fade-enter-from .sponsor-modal,.modal-fade-leave-to .sponsor-modal { opacity: 0; transform: translateY(22px) scale(.96); }
+@media (max-width: 560px) { .modal-backdrop { padding: 12px; }.sponsor-modal { padding: 30px 16px 18px; border-radius: 24px; }.qr-grid { gap: 10px; }.qr-grid figure { padding: 8px; border-radius: 16px; }.qr-grid img { border-radius: 10px; } }
+
+.page-loader { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #10233e; background: linear-gradient(145deg,#f5faff,#e5f2ff); opacity: 1; visibility: visible; transition: opacity .5s ease, visibility .5s ease; }
+.page-loader.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-card { display: flex; align-items: center; gap: 14px; min-width: 270px; padding: 16px 20px; border: 1px solid rgba(255,255,255,.9); border-radius: 20px; background: rgba(255,255,255,.55); box-shadow: 0 20px 55px rgba(31,91,147,.12); backdrop-filter: blur(18px); }
+.loader-card img { width: 46px; height: 46px; border-radius: 13px; object-fit: contain; }
+.loader-card div { display: flex; flex-direction: column; gap: 3px; }
+.loader-card strong { font-size: 15px; }
+.loader-card small { color: #69809a; font-size: 11px; }
+.loader-progress { width: 230px; height: 3px; margin-top: 16px; overflow: hidden; border-radius: 4px; background: rgba(19,121,234,.12); }
+.loader-progress i { display: block; width: 38%; height: 100%; border-radius: inherit; background: #1379ea; animation: loader-progress 1.2s ease-in-out infinite; }
+@keyframes loader-progress { 0% { transform: translateX(-110%); } 100% { transform: translateX(285%); } }
+@media (prefers-reduced-motion: reduce) { .loader-progress i { animation: none !important; width: 100%; opacity: .5; } }

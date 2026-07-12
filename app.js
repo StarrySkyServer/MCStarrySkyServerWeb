@@ -24,6 +24,7 @@ createApp({
     const toast = ref('');
     const audio = ref(null);
     const musicPlaying = ref(false);
+    const sponsorOpen = ref(false);
     const backgroundHistory = ref(['img/bg1.jpg']);
     const backgroundIndex = ref(0);
     const serverStatus = ref({ loading: true, online: false, players: 0, max: 0 });
@@ -102,19 +103,24 @@ createApp({
     async function loadServerStatus() {
       const endpoints = [
         `https://api.mcsrvstat.us/bedrock/3/${serverHost}:${serverPort}`,
+        'https://mcbsl.szzz666.top:8080/api/servers/1/status',
         `https://api.mcstatus.io/v2/status/bedrock/${serverHost}:${serverPort}`,
         `https://motdbe.blackbe.work/api?host=${serverHost}:${serverPort}`
       ];
       for (const endpoint of endpoints) {
         try {
           const { data } = await axios.get(endpoint, { timeout: 9000 });
-          const onlineFlag = data.online ?? data.status ?? data.success ?? data.data?.online;
-          const players = findNumber(data, ['players.online', 'players', 'online_players', 'data.players.online', 'data.online']);
-          const max = findNumber(data, ['players.max', 'max_players', 'max', 'data.players.max', 'data.max']);
-          serverStatus.value = { loading: false, online: onlineFlag === true || onlineFlag === 'online' || players > 0 || max > 0, players, max };
-          return;
+          const payload = data.data ?? data;
+          const onlineFlag = payload.online ?? payload.status ?? payload.success;
+          const players = findNumber(payload, ['onlinePlayers', 'players.online', 'players', 'online_players', 'online']);
+          const max = findNumber(payload, ['maxPlayers', 'players.max', 'max_players', 'max']);
+          const online = onlineFlag === true || onlineFlag === 'online' || players > 0;
+          if (online) {
+            serverStatus.value = { loading: false, online: true, players, max };
+            return;
+          }
         } catch (_) {
-          // Try the next provider when a service or its certificate is unavailable.
+          // Failed and offline responses both fall through to the next provider.
         }
       }
       serverStatus.value = { loading: false, online: false, players: 0, max: 0 };
@@ -186,7 +192,10 @@ createApp({
       document.body.classList.toggle('compact-mode', compact.value);
       tryAutoplayMusic();
       nextBackground();
+      // The interface is ready; do not wait for slow external fonts, APIs or iframes.
+      requestAnimationFrame(() => requestAnimationFrame(() => window.hidePageLoader?.()));
       mediaQuery.addEventListener('change', applyTheme);
+      document.addEventListener('keydown', closeSponsorOnEscape);
       loadServerStatus();
       statusTimer = setInterval(loadServerStatus, 60000);
       if (window.location.protocol !== 'file:') {
@@ -203,8 +212,13 @@ createApp({
       clearInterval(statusTimer);
       clearTimeout(toastTimer);
       mediaQuery.removeEventListener('change', applyTheme);
+      document.removeEventListener('keydown', closeSponsorOnEscape);
     });
 
-    return { serverHost, serverPort, minecraftUrl, sponsors, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, serverStatus, links, backgroundUrl, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, formatAmount };
+    function closeSponsorOnEscape(event) {
+      if (event.key === 'Escape') sponsorOpen.value = false;
+    }
+
+    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, serverStatus, links, backgroundUrl, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, formatAmount };
   }
 }).mount('#app');

@@ -16,6 +16,35 @@
   <script src="app.js" defer></script>
 </head>
 <body>
+  <div id="page-loader" class="page-loader" role="status" aria-live="polite" aria-label="网站正在加载">
+    <div class="loader-card">
+      <img src="img/Starry sky logo air.png" alt="">
+      <div>
+        <strong>MC 星空服务器</strong>
+        <small>正在加载页面</small>
+      </div>
+    </div>
+    <div class="loader-progress" aria-hidden="true"><i></i></div>
+  </div>
+  <script>
+    (() => {
+      const startedAt = Date.now();
+      let hidden = false;
+      window.hidePageLoader = () => {
+        if (hidden) return;
+        hidden = true;
+        const loader = document.getElementById('page-loader');
+        if (!loader) return;
+        const delay = Math.max(0, 500 - (Date.now() - startedAt));
+        setTimeout(() => {
+          loader.classList.add('is-hidden');
+          setTimeout(() => loader.remove(), 650);
+        }, delay);
+      };
+      window.addEventListener('load', window.hidePageLoader, { once: true });
+      setTimeout(window.hidePageLoader, 10000);
+    })();
+  </script>
   <div id="app" v-cloak :class="['site-shell', { compact }]">
     <div class="background" :style="{ backgroundImage: `url('${backgroundUrl}')` }"></div>
     <div v-show="!compact" class="background-tint"></div>
@@ -78,6 +107,9 @@
           <a v-for="link in links" :key="link.title" :href="link.url" target="_blank" rel="noopener noreferrer" class="link-card glass">
             <span class="link-icon">{{ link.icon }}</span><div><h3>{{ link.title }}</h3><p>{{ link.description }}</p></div><b>↗</b>
           </a>
+          <button type="button" class="link-card sponsor-link glass" @click="sponsorOpen = true">
+            <span class="link-icon">¥</span><div><h3>赞助服务器</h3><p>支持星空持续稳定运行</p></div><b>↗</b>
+          </button>
         </div>
       </section>
 
@@ -109,6 +141,20 @@
     </div>
     <audio ref="audio" src="data/c.mp3" loop preload="metadata" @play="musicPlaying = true" @pause="musicPlaying = false"></audio>
     <div v-if="toast" class="toast">{{ toast }}</div>
+    <transition name="modal-fade">
+      <div v-if="sponsorOpen" class="modal-backdrop" role="presentation" @click.self="sponsorOpen = false">
+        <section class="sponsor-modal glass-strong" role="dialog" aria-modal="true" aria-labelledby="sponsor-title">
+          <button type="button" class="modal-close" aria-label="关闭赞助窗口" @click="sponsorOpen = false">×</button>
+          <span class="modal-kicker">SUPPORT STARRY SKY</span>
+          <h2 id="sponsor-title">赞助星空服务器</h2>
+          <p>感谢你的支持，每一份赞助都会用于服务器的维护与发展。</p>
+          <div class="qr-grid">
+            <figure><img src="img/wxzf.jpg" alt="微信赞助二维码"><figcaption><b>微信支付</b><span>使用微信扫码</span></figcaption></figure>
+            <figure><img src="img/zfbzf.jpg" alt="支付宝赞助二维码"><figcaption><b>支付宝</b><span>使用支付宝扫码</span></figcaption></figure>
+          </div>
+        </section>
+      </div>
+    </transition>
     <footer>© {{ new Date().getFullYear() }} MC 星空服务器 · mc.szzz666.top:19132</footer>
   </div>
 </body>
