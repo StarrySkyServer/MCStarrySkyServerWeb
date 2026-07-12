@@ -1,3 +1,4 @@
+@font-face { font-family: "Noto Sans SC"; src: url("assets/fonts/NotoSansSC-Variable.ttf") format("truetype"); font-style: normal; font-weight: 100 900; font-display: swap; }
 :root { color-scheme: light; --text: #10233e; --muted: #5e7088; --line: rgba(255,255,255,.58); --glass: rgba(244,250,255,.58); --glass-strong: rgba(250,253,255,.76); --accent: #1379ea; --shadow: 0 24px 70px rgba(24,75,129,.16); }
 :root[data-theme="dark"] { color-scheme: dark; --text: #edf6ff; --muted: #acc0d8; --line: rgba(255,255,255,.15); --glass: rgba(10,25,46,.58); --glass-strong: rgba(13,31,54,.78); --accent: #65b5ff; --shadow: 0 24px 70px rgba(0,0,0,.35); }
 * { box-sizing: border-box; }
