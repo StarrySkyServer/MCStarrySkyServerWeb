@@ -37,7 +37,7 @@ createApp({
       { title: '游戏下载', description: '获取 Minecraft 客户端', icon: '↓', url: 'https://mc.minebbs.com/#/' },
       { title: '意见反馈', description: '告诉我们你的建议', icon: '✦', url: 'https://www.wenjuan.com/s/UZBZJvqQRqb/' },
       { title: 'QQ 频道', description: '加入星空官方频道', icon: '#', url: 'https://pd.qq.com/s/d88deyhxs' },
-      { title: '玩家群聊', description: '加入官方 QQ 群', icon: '∞', url: 'https://qm.qq.com/q/EPKQQs7k0E' },
+      { title: '玩家群聊', description: '加入官方 QQ 群', icon: '∞', url: 'https://qm.qq.com/q/Nnjg4MN8Ma' },
       { title: '协管中心', description: '服务器协管入口', icon: '◇', url: 'http://mc.szzz666.top:23400/public/Assistant' },
       { title: '服务中心', description: '访问服务器其他服务', icon: '⌂', url: 'http://mc.szzz666.top:23400/' },
       { title: 'Bing 搜索', description: '打开独立搜索起始页', icon: '⌕', url: 'search.html' }
