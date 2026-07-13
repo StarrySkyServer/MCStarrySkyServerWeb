@@ -25,7 +25,8 @@ createApp({
     const audio = ref(null);
     const musicPlaying = ref(false);
     const sponsorOpen = ref(false);
-    const backgroundHistory = ref(['img/bg1.jpg']);
+    const localBackground = window.innerWidth <= 700 ? 'img/bgpe.jpg' : 'img/bgpc.jpg';
+    const backgroundHistory = ref([localBackground]);
     const backgroundIndex = ref(0);
     const serverStatus = ref({ loading: true, online: false, players: 0, max: 0 });
     let toastTimer;
@@ -46,6 +47,9 @@ createApp({
     const themeLabel = computed(() => ({ auto: '自动', light: '浅色', dark: '暗色' })[theme.value]);
     const themeIcon = computed(() => ({ auto: '◐', light: '☀', dark: '☾' })[theme.value]);
     const backgroundUrl = computed(() => backgroundHistory.value[backgroundIndex.value]);
+    const backgroundImage = computed(() => backgroundUrl.value === localBackground
+      ? `url('${localBackground}')`
+      : `url('${backgroundUrl.value}'), url('${localBackground}')`);
 
     function showToast(message) {
       toast.value = message;
@@ -134,12 +138,7 @@ createApp({
         if (!/^https?:\/\//i.test(url)) throw new Error('Invalid background URL');
         backgroundHistory.value = backgroundHistory.value.slice(0, backgroundIndex.value + 1).concat(url);
         backgroundIndex.value += 1;
-      } catch (_) {
-        const fallback = backgroundUrl.value === 'img/bg1.jpg' ? 'img/bg2.jpg' : 'img/bg1.jpg';
-        backgroundHistory.value = backgroundHistory.value.slice(0, backgroundIndex.value + 1).concat(fallback);
-        backgroundIndex.value += 1;
-        showToast('随机背景不可用，已切换本地背景');
-      }
+      } catch (_) {}
     }
 
     function previousBackground() {
@@ -219,6 +218,6 @@ createApp({
       if (event.key === 'Escape') sponsorOpen.value = false;
     }
 
-    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, serverStatus, links, backgroundUrl, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, formatAmount };
+    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, formatAmount };
   }
 }).mount('#app');
