@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
   <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
   <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
-  <link href="https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.5.13/vue.global.prod.min.js" defer></script>
   <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.7.8/axios.min.js" defer></script>
@@ -115,8 +114,9 @@
       <section class="content-section media-section full-content">
         <div class="video-card glass">
           <div class="card-title"><div><span>FEATURED</span><h2>服务器宣传片</h2></div></div>
-          <div class="video-player">
-            <iframe src="https://player.bilibili.com/player.html?isOutside=true&amp;aid=116081473815291&amp;bvid=BV1BRZgBzEHC&amp;cid=36110600665&amp;p=1" title="MC 星空服务器宣传片" loading="lazy" fetchpriority="low" scrolling="no" frameborder="0" allowfullscreen></iframe>
+          <div ref="videoSection" class="video-player">
+            <iframe v-if="videoReady" src="https://player.bilibili.com/player.html?isOutside=true&amp;aid=116081473815291&amp;bvid=BV1BRZgBzEHC&amp;cid=36110600665&amp;p=1" title="MC 星空服务器宣传片" loading="lazy" fetchpriority="low" scrolling="no" frameborder="0" allowfullscreen></iframe>
+            <div v-else class="video-loading">宣传片将在滚动到此处时加载</div>
           </div>
         </div>
         <div id="sponsors" class="sponsor-card glass">
@@ -138,7 +138,7 @@
       <span></span>
       <button type="button" @click="toggleMusic" :title="musicPlaying ? '暂停音乐' : '播放音乐'">{{ musicPlaying ? '暂停音乐' : '播放音乐' }}</button>
     </div>
-    <audio ref="audio" src="data/c.mp3" loop preload="metadata" @play="musicPlaying = true" @pause="musicPlaying = false"></audio>
+    <audio ref="audio" loop preload="none" @play="musicPlaying = true" @pause="musicPlaying = false"></audio>
     <div v-if="toast" class="toast">{{ toast }}</div>
     <transition name="modal-fade">
       <div v-if="sponsorOpen" class="modal-backdrop" role="presentation" @click.self="sponsorOpen = false">
@@ -148,8 +148,8 @@
           <h2 id="sponsor-title">赞助星空服务器</h2>
           <p>感谢你的支持，每一份赞助都会用于服务器的维护与发展。</p>
           <div class="qr-grid">
-            <figure><img src="img/wxzf.jpg" alt="微信赞助二维码"><figcaption><b>微信支付</b><span>使用微信扫码</span></figcaption></figure>
-            <figure><img src="img/zfbzf.jpg" alt="支付宝赞助二维码"><figcaption><b>支付宝</b><span>使用支付宝扫码</span></figcaption></figure>
+            <figure><img src="img/wxzf.jpg" alt="微信赞助二维码" loading="lazy" decoding="async"><figcaption><b>微信支付</b><span>使用微信扫码</span></figcaption></figure>
+            <figure><img src="img/zfbzf.jpg" alt="支付宝赞助二维码" loading="lazy" decoding="async"><figcaption><b>支付宝</b><span>使用支付宝扫码</span></figcaption></figure>
           </div>
         </section>
       </div>

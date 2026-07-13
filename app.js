@@ -25,12 +25,15 @@ createApp({
     const audio = ref(null);
     const musicPlaying = ref(false);
     const sponsorOpen = ref(false);
+    const videoSection = ref(null);
+    const videoReady = ref(false);
     const localBackground = window.innerWidth <= 700 ? 'img/bgpe.jpg' : 'img/bgpc.jpg';
     const backgroundHistory = ref([localBackground]);
     const backgroundIndex = ref(0);
     const serverStatus = ref({ loading: true, online: false, players: 0, max: 0 });
     let toastTimer;
     let statusTimer;
+    let videoObserver;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const links = [
@@ -107,9 +110,9 @@ createApp({
     async function loadServerStatus() {
       const endpoints = [
         `https://api.mcsrvstat.us/bedrock/3/${serverHost}:${serverPort}`,
-        'https://mcbsl.szzz666.top:8080/api/servers/1/status',
         `https://api.mcstatus.io/v2/status/bedrock/${serverHost}:${serverPort}`,
-        `https://motdbe.blackbe.work/api?host=${serverHost}:${serverPort}`
+        `https://motdbe.blackbe.work/api?host=${serverHost}:${serverPort}`,
+        'https://mcbsl.szzz666.top:8080/api/servers/1/status'
       ];
       for (const endpoint of endpoints) {
         try {
@@ -164,13 +167,21 @@ createApp({
 
     async function toggleMusic() {
       if (!audio.value) return;
+      ensureMusicLoaded();
       if (audio.value.paused) {
         try { await audio.value.play(); } catch (_) { showToast('浏览器阻止了音乐播放，请再次点击'); }
       } else audio.value.pause();
     }
 
+    function ensureMusicLoaded() {
+      if (!audio.value || audio.value.getAttribute('src')) return;
+      audio.value.src = 'data/c.mp3';
+      audio.value.load();
+    }
+
     async function tryAutoplayMusic() {
       if (!audio.value) return;
+      ensureMusicLoaded();
       try {
         await audio.value.play();
       } catch (_) {
@@ -189,7 +200,6 @@ createApp({
     onMounted(async () => {
       applyTheme();
       document.body.classList.toggle('compact-mode', compact.value);
-      tryAutoplayMusic();
       nextBackground();
       // The interface is ready; do not wait for slow external fonts, APIs or iframes.
       requestAnimationFrame(() => requestAnimationFrame(() => window.hidePageLoader?.()));
@@ -197,19 +207,40 @@ createApp({
       document.addEventListener('keydown', closeSponsorOnEscape);
       loadServerStatus();
       statusTimer = setInterval(loadServerStatus, 60000);
-      if (window.location.protocol !== 'file:') {
+      if ('IntersectionObserver' in window && videoSection.value) {
+        videoObserver = new IntersectionObserver(([entry]) => {
+          if (!entry.isIntersecting) return;
+          videoReady.value = true;
+          videoObserver.disconnect();
+        }, { rootMargin: '300px' });
+        videoObserver.observe(videoSection.value);
+      } else {
+        videoReady.value = true;
+      }
+      const loadDeferredData = async () => {
+        if (window.location.protocol === 'file:') return;
         try {
           const { data } = await axios.get('data/sponsor_data.json');
           if (Array.isArray(data)) sponsors.value = data.sort((a, b) => b.amount - a.amount);
-        } catch (_) {
-          showToast('完整赞助榜加载失败，正在显示本地榜单');
-        }
-      }
+        } catch (_) {}
+      };
+      const runWhenIdle = callback => 'requestIdleCallback' in window
+        ? window.requestIdleCallback(callback, { timeout: 3000 })
+        : setTimeout(callback, 1500);
+      runWhenIdle(() => {
+        const fontStylesheet = document.createElement('link');
+        fontStylesheet.rel = 'stylesheet';
+        fontStylesheet.href = 'https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap';
+        document.head.appendChild(fontStylesheet);
+      });
+      runWhenIdle(loadDeferredData);
+      setTimeout(() => runWhenIdle(tryAutoplayMusic), 3000);
     });
 
     onBeforeUnmount(() => {
       clearInterval(statusTimer);
       clearTimeout(toastTimer);
+      videoObserver?.disconnect();
       mediaQuery.removeEventListener('change', applyTheme);
       document.removeEventListener('keydown', closeSponsorOnEscape);
     });
@@ -218,6 +249,6 @@ createApp({
       if (event.key === 'Escape') sponsorOpen.value = false;
     }
 
-    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, formatAmount };
+    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, videoSection, videoReady, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, formatAmount };
   }
 }).mount('#app');
