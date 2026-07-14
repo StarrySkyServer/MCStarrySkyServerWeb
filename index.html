@@ -131,14 +131,62 @@
     </main>
     </transition>
 
-    <div class="utility-bar glass">
-      <button type="button" @click="previousBackground" title="上一张背景">←</button>
-      <button type="button" @click="nextBackground" title="随机背景">换一张</button>
-      <button type="button" @click="downloadBackground" title="下载当前背景">下载</button>
-      <span></span>
-      <button type="button" @click="toggleMusic" :title="musicPlaying ? '暂停音乐' : '播放音乐'">{{ musicPlaying ? '暂停音乐' : '播放音乐' }}</button>
+    <div class="utility-bar">
+      <div class="background-tools glass">
+        <button type="button" @click="previousBackground" title="上一张背景" aria-label="上一张背景"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7l-5 5 5 5M20 12H5"/></svg></button>
+        <button type="button" @click="nextBackground" title="随机背景" aria-label="随机背景"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 7l5 5-5 5M4 12h15"/></svg></button>
+        <button type="button" @click="downloadBackground" title="下载当前背景" aria-label="下载当前背景"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg></button>
+      </div>
+      <div class="music-player glass">
+        <div class="track-summary">
+          <div class="cover-wrap"><img :src="currentTrack.pic" alt="歌曲封面" @error="$event.target.src = 'img/Starry sky logo air.png'"><i v-if="musicPlaying"></i></div>
+          <div class="track-info"><strong>{{ currentTrack.name }}</strong><span>{{ currentTrack.artist }}</span></div>
+        </div>
+        <div class="playback-center">
+          <div class="playback-controls">
+            <button type="button" class="player-control" @click="previousTrack" title="上一首" aria-label="上一首"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14M18 6l-9 6 9 6V6z"/></svg></button>
+            <button type="button" class="player-control play-control" @click="toggleMusic" :title="musicPlaying ? '暂停音乐' : '播放音乐'" :aria-label="musicPlaying ? '暂停音乐' : '播放音乐'">
+              <svg v-if="musicPlaying" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+              <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
+            </button>
+            <button type="button" class="player-control" @click="nextTrack" title="下一首" aria-label="下一首"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14M6 6l9 6-9 6V6z"/></svg></button>
+          </div>
+          <div class="progress-row"><small>{{ formatTime(currentTime) }}</small><input class="music-progress player-range" type="range" min="0" :max="duration || 0" :value="currentTime" step="0.1" :style="{ '--range-progress': `${duration ? Math.min(100, currentTime / duration * 100) : 0}%` }" aria-label="播放进度" @input="seekMusic"><small>{{ formatTime(duration) }}</small></div>
+        </div>
+        <div class="player-actions">
+          <button type="button" class="player-control mode-button" @click="cyclePlayMode" :title="`播放模式：${playModeLabel}`" :aria-label="`播放模式：${playModeLabel}`">
+            <svg v-if="playMode === 'single'" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l3 3-3 3M4 11V9a4 4 0 014-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 01-4 4H4"/><text x="12" y="14.5">1</text></svg>
+            <svg v-else-if="playMode === 'random'" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5M4 5h2.5a4 4 0 013.2 1.6l4.6 6.8a4 4 0 003.2 1.6H21M16 21h5v-5M4 19h2.5a4 4 0 003.2-1.6l1.1-1.6M14.2 7.7l.1-.1A4 4 0 0117.5 6H21"/></svg>
+            <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2l3 3-3 3M4 11V9a4 4 0 014-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 01-4 4H4"/></svg>
+          </button>
+          <div class="volume-control" @click.stop>
+            <button type="button" class="player-control volume-button" @click="toggleVolumePanel" :class="{ active: volumeOpen }" :aria-expanded="volumeOpen" title="调节音量" aria-label="调节音量">
+              <svg v-if="volume === 0" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6.5 9H3v6h3.5l4.5 4V5zM16 9l5 6M21 9l-5 6"/></svg><svg v-else-if="volume < 0.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6.5 9H3v6h3.5l4.5 4V5zM15 9.5a4 4 0 010 5"/></svg><svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6.5 9H3v6h3.5l4.5 4V5zM15 9.5a4 4 0 010 5M18 7a7 7 0 010 10"/></svg>
+            </button>
+            <transition name="volume-fade"><div v-if="volumeOpen" class="volume-popover glass-strong"><small>音量</small><input class="volume-slider player-range" type="range" min="0" max="1" :value="volume" step="0.01" :style="{ '--range-progress': `${volume * 100}%` }" aria-label="音量" @input="setVolume"><span>{{ Math.round(volume * 100) }}</span></div></transition>
+          </div>
+          <button type="button" class="player-control list-control" @click="playlistOpen = !playlistOpen" :class="{ active: playlistOpen }" :aria-expanded="playlistOpen" title="播放列表" aria-label="打开播放列表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h12M4 11h12M4 16h8M19 14v6M16 17h6"/></svg></button>
+        </div>
+      </div>
+      <transition name="playlist-fade">
+        <section v-if="playlistOpen" class="playlist-panel glass-strong" aria-label="播放列表">
+          <header class="playlist-header">
+            <div><strong>播放列表</strong><small>选择要播放的歌曲</small></div>
+            <span class="playlist-count">{{ playlist.length }} 首</span>
+            <button type="button" class="playlist-close" @click="playlistOpen = false" aria-label="关闭播放列表">×</button>
+          </header>
+          <div class="playlist-items">
+            <button v-for="(track, index) in playlist" :key="`${track.name}-${index}`" type="button" class="playlist-item" :class="{ active: index === trackIndex }" @click="selectTrack(index, true)">
+              <span class="track-number">{{ index === trackIndex && musicPlaying ? '▶' : String(index + 1).padStart(2, '0') }}</span>
+              <img :src="track.pic" alt="" loading="lazy" @error="$event.target.src = 'img/Starry sky logo air.png'">
+              <span class="playlist-track"><strong>{{ track.name }}</strong><small>{{ track.artist }}</small></span>
+              <span v-if="index === trackIndex" class="playing-indicator" aria-label="当前播放"><i></i><i></i><i></i></span>
+            </button>
+          </div>
+        </section>
+      </transition>
     </div>
-    <audio ref="audio" loop preload="none" @play="musicPlaying = true" @pause="musicPlaying = false"></audio>
+    <audio ref="audio" preload="none" @play="musicPlaying = true" @pause="musicPlaying = false" @timeupdate="updateMusicTime" @loadedmetadata="updateMusicTime" @ended="handleTrackEnded" @error="handleTrackError"></audio>
     <div v-if="toast" class="toast">{{ toast }}</div>
     <transition name="modal-fade">
       <div v-if="sponsorOpen" class="modal-backdrop" role="presentation" @click.self="sponsorOpen = false">

@@ -1,5 +1,11 @@
 const { createApp, ref, computed, onMounted, onBeforeUnmount } = Vue;
 
+// Set playlistId to use a NetEase playlist through a Meting-compatible API.
+const MUSIC_CONFIG = {
+  playlistId: '2114319187',
+  api: 'https://api.i-meto.com/meting/api?server=netease&type=playlist&id={id}'
+};
+
 createApp({
   setup() {
     const serverHost = 'mc.szzz666.top';
@@ -24,6 +30,16 @@ createApp({
     const toast = ref('');
     const audio = ref(null);
     const musicPlaying = ref(false);
+    const savedVolume = Number(localStorage.getItem('musicVolume'));
+    const volume = ref(Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 1 ? savedVolume : 0.7);
+    const volumeOpen = ref(false);
+    const savedPlayMode = localStorage.getItem('musicPlayMode');
+    const playMode = ref(['sequence', 'single', 'random'].includes(savedPlayMode) ? savedPlayMode : 'sequence');
+    const playlist = ref([{ name: '星空背景音乐', artist: 'Minecraft 星空服务器', url: 'data/星空背景音乐.mp3', pic: 'img/Starry sky logo air.png' }]);
+    const trackIndex = ref(0);
+    const playlistOpen = ref(false);
+    const currentTime = ref(0);
+    const duration = ref(0);
     const sponsorOpen = ref(false);
     const videoSection = ref(null);
     const videoReady = ref(false);
@@ -50,6 +66,8 @@ createApp({
     const themeLabel = computed(() => ({ auto: '自动', light: '浅色', dark: '暗色' })[theme.value]);
     const themeIcon = computed(() => ({ auto: '◐', light: '☀', dark: '☾' })[theme.value]);
     const backgroundUrl = computed(() => backgroundHistory.value[backgroundIndex.value]);
+    const currentTrack = computed(() => playlist.value[trackIndex.value] || playlist.value[0]);
+    const playModeLabel = computed(() => ({ sequence: '顺序循环', single: '单曲循环', random: '随机播放' })[playMode.value]);
     const backgroundImage = computed(() => backgroundUrl.value === localBackground
       ? `url('${localBackground}')`
       : `url('${backgroundUrl.value}'), url('${localBackground}')`);
@@ -175,8 +193,75 @@ createApp({
 
     function ensureMusicLoaded() {
       if (!audio.value || audio.value.getAttribute('src')) return;
-      audio.value.src = 'data/c.mp3';
+      audio.value.src = currentTrack.value.url;
       audio.value.load();
+    }
+
+    async function selectTrack(index, shouldPlay = musicPlaying.value) {
+      if (!audio.value || !playlist.value.length) return;
+      trackIndex.value = (index + playlist.value.length) % playlist.value.length;
+      currentTime.value = 0;
+      duration.value = 0;
+      audio.value.src = currentTrack.value.url;
+      audio.value.load();
+      if (shouldPlay) try { await audio.value.play(); } catch (_) {}
+    }
+
+    function previousTrack() { selectTrack(trackIndex.value - 1, true); }
+    function randomTrackIndex() {
+      if (playlist.value.length < 2) return trackIndex.value;
+      let index;
+      do { index = Math.floor(Math.random() * playlist.value.length); } while (index === trackIndex.value);
+      return index;
+    }
+    function nextTrack() {
+      selectTrack(playMode.value === 'random' ? randomTrackIndex() : trackIndex.value + 1, true);
+    }
+    function handleTrackEnded() {
+      if (playMode.value === 'single') selectTrack(trackIndex.value, true);
+      else nextTrack();
+    }
+    function cyclePlayMode() {
+      const modes = ['sequence', 'single', 'random'];
+      playMode.value = modes[(modes.indexOf(playMode.value) + 1) % modes.length];
+      localStorage.setItem('musicPlayMode', playMode.value);
+      showToast(`播放模式：${playModeLabel.value}`);
+    }
+    function updateMusicTime() {
+      if (!audio.value) return;
+      currentTime.value = Number.isFinite(audio.value.currentTime) ? audio.value.currentTime : 0;
+      duration.value = Number.isFinite(audio.value.duration) ? audio.value.duration : 0;
+    }
+    function seekMusic(event) {
+      if (!audio.value) return;
+      audio.value.currentTime = Number(event.target.value);
+      updateMusicTime();
+    }
+    function setVolume(event) {
+      const nextVolume = Math.min(1, Math.max(0, Number(event.target?.value ?? event)));
+      volume.value = nextVolume;
+      if (audio.value) audio.value.volume = nextVolume;
+      localStorage.setItem('musicVolume', nextVolume);
+    }
+    function toggleVolumePanel() { volumeOpen.value = !volumeOpen.value; }
+    function closeVolumePanel() { volumeOpen.value = false; }
+    function handleTrackError() { if (playlist.value.length > 1) nextTrack(); }
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+      return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+    }
+    async function loadNetEasePlaylist() {
+      if (!MUSIC_CONFIG.playlistId) return;
+      try {
+        const { data } = await axios.get(MUSIC_CONFIG.api.replace('{id}', encodeURIComponent(MUSIC_CONFIG.playlistId)), { timeout: 10000 });
+        const tracks = (Array.isArray(data) ? data : data.data || []).filter(track => track.url).map(track => ({
+          name: track.name || track.title || '未知歌曲',
+          artist: track.artist || track.author || '网易云音乐',
+          url: track.url.replace(/^http:/, 'https:'),
+          pic: (track.pic || track.cover || 'img/Starry sky logo air.png').replace(/^http:/, 'https:')
+        }));
+        if (tracks.length) { playlist.value = tracks; trackIndex.value = 0; }
+      } catch (_) {}
     }
 
     async function tryAutoplayMusic() {
@@ -199,12 +284,14 @@ createApp({
 
     onMounted(async () => {
       applyTheme();
+      if (audio.value) audio.value.volume = volume.value;
       document.body.classList.toggle('compact-mode', compact.value);
       nextBackground();
       // The interface is ready; do not wait for slow external fonts, APIs or iframes.
       requestAnimationFrame(() => requestAnimationFrame(() => window.hidePageLoader?.()));
       mediaQuery.addEventListener('change', applyTheme);
       document.addEventListener('keydown', closeSponsorOnEscape);
+      document.addEventListener('click', closeVolumePanel);
       loadServerStatus();
       statusTimer = setInterval(loadServerStatus, 60000);
       if ('IntersectionObserver' in window && videoSection.value) {
@@ -234,6 +321,7 @@ createApp({
         document.head.appendChild(fontStylesheet);
       });
       runWhenIdle(loadDeferredData);
+      runWhenIdle(loadNetEasePlaylist);
       setTimeout(() => runWhenIdle(tryAutoplayMusic), 3000);
     });
 
@@ -243,12 +331,13 @@ createApp({
       videoObserver?.disconnect();
       mediaQuery.removeEventListener('change', applyTheme);
       document.removeEventListener('keydown', closeSponsorOnEscape);
+      document.removeEventListener('click', closeVolumePanel);
     });
 
     function closeSponsorOnEscape(event) {
       if (event.key === 'Escape') sponsorOpen.value = false;
     }
 
-    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, videoSection, videoReady, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, formatAmount };
+    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, videoSection, videoReady, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, volume, volumeOpen, playMode, playModeLabel, playlist, trackIndex, playlistOpen, currentTrack, currentTime, duration, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, toggleVolumePanel, setVolume, cyclePlayMode, selectTrack, previousTrack, nextTrack, handleTrackEnded, updateMusicTime, seekMusic, handleTrackError, formatTime, formatAmount };
   }
 }).mount('#app');
