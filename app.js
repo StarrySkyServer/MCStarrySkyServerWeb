@@ -36,6 +36,8 @@ createApp({
     const savedPlayMode = localStorage.getItem('musicPlayMode');
     const playMode = ref(['sequence', 'single', 'random'].includes(savedPlayMode) ? savedPlayMode : 'sequence');
     const playlist = ref([{ name: '星空背景音乐', artist: 'Minecraft 星空服务器', url: 'data/星空背景音乐.mp3', pic: 'img/Starry sky logo air.png' }]);
+    const playlistId = ref(localStorage.getItem('musicPlaylistId') || MUSIC_CONFIG.playlistId);
+    const playlistLoading = ref(false);
     const trackIndex = ref(0);
     const playlistOpen = ref(false);
     const currentTime = ref(0);
@@ -60,7 +62,7 @@ createApp({
       { title: '玩家群聊', description: '加入官方 QQ 群', icon: '∞', url: 'https://qm.qq.com/q/Nnjg4MN8Ma' },
       { title: '协管中心', description: '服务器协管入口', icon: '◇', url: 'http://mc.szzz666.top:23400/public/Assistant' },
       { title: '服务中心', description: '访问服务器其他服务', icon: '⌂', url: 'http://mc.szzz666.top:23400/' },
-      { title: 'Bing 搜索', description: '打开独立搜索起始页', icon: '⌕', url: 'search.html' }
+      { title: '星空起始页', description: '打开独立搜索起始页', icon: '⌕', url: 'search.html' }
     ];
 
     const themeLabel = computed(() => ({ auto: '自动', light: '浅色', dark: '暗色' })[theme.value]);
@@ -250,33 +252,28 @@ createApp({
       if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
       return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
     }
-    async function loadNetEasePlaylist() {
-      if (!MUSIC_CONFIG.playlistId) return;
+    async function loadNetEasePlaylist(id = playlistId.value) {
+      const nextId = String(id || '').trim();
+      if (!nextId) return showToast('请输入网易云歌单 ID');
+      if (playlistLoading.value) return;
+      playlistLoading.value = true;
       try {
-        const { data } = await axios.get(MUSIC_CONFIG.api.replace('{id}', encodeURIComponent(MUSIC_CONFIG.playlistId)), { timeout: 10000 });
+        const { data } = await axios.get(MUSIC_CONFIG.api.replace('{id}', encodeURIComponent(nextId)), { timeout: 10000 });
         const tracks = (Array.isArray(data) ? data : data.data || []).filter(track => track.url).map(track => ({
           name: track.name || track.title || '未知歌曲',
           artist: track.artist || track.author || '网易云音乐',
           url: track.url.replace(/^http:/, 'https:'),
           pic: (track.pic || track.cover || 'img/Starry sky logo air.png').replace(/^http:/, 'https:')
         }));
-        if (tracks.length) { playlist.value = tracks; trackIndex.value = 0; }
-      } catch (_) {}
-    }
-
-    async function tryAutoplayMusic() {
-      if (!audio.value) return;
-      ensureMusicLoaded();
-      try {
-        await audio.value.play();
+        if (!tracks.length) throw new Error('Playlist is empty');
+        playlist.value = tracks;
+        trackIndex.value = 0;
+        localStorage.setItem('musicPlaylistId', nextId);
+        showToast(`已加载 ${tracks.length} 首歌曲`);
       } catch (_) {
-        const resume = async () => {
-          try { await audio.value.play(); } catch (_) { return; }
-          document.removeEventListener('pointerdown', resume);
-          document.removeEventListener('keydown', resume);
-        };
-        document.addEventListener('pointerdown', resume, { once: true });
-        document.addEventListener('keydown', resume, { once: true });
+        showToast('歌单加载失败，请检查 ID 或稍后重试');
+      } finally {
+        playlistLoading.value = false;
       }
     }
 
@@ -286,14 +283,11 @@ createApp({
       applyTheme();
       if (audio.value) audio.value.volume = volume.value;
       document.body.classList.toggle('compact-mode', compact.value);
-      nextBackground();
       // The interface is ready; do not wait for slow external fonts, APIs or iframes.
       requestAnimationFrame(() => requestAnimationFrame(() => window.hidePageLoader?.()));
       mediaQuery.addEventListener('change', applyTheme);
       document.addEventListener('keydown', closeSponsorOnEscape);
       document.addEventListener('click', closeVolumePanel);
-      loadServerStatus();
-      statusTimer = setInterval(loadServerStatus, 60000);
       if ('IntersectionObserver' in window && videoSection.value) {
         videoObserver = new IntersectionObserver(([entry]) => {
           if (!entry.isIntersecting) return;
@@ -315,14 +309,18 @@ createApp({
         ? window.requestIdleCallback(callback, { timeout: 3000 })
         : setTimeout(callback, 1500);
       runWhenIdle(() => {
+        nextBackground();
+        loadServerStatus();
+        statusTimer = setInterval(loadServerStatus, 60000);
+      });
+      runWhenIdle(() => {
         const fontStylesheet = document.createElement('link');
         fontStylesheet.rel = 'stylesheet';
         fontStylesheet.href = 'https://fonts.loli.net/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap';
         document.head.appendChild(fontStylesheet);
       });
       runWhenIdle(loadDeferredData);
-      runWhenIdle(loadNetEasePlaylist);
-      setTimeout(() => runWhenIdle(tryAutoplayMusic), 3000);
+      runWhenIdle(() => loadNetEasePlaylist());
     });
 
     onBeforeUnmount(() => {
@@ -338,6 +336,6 @@ createApp({
       if (event.key === 'Escape') sponsorOpen.value = false;
     }
 
-    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, videoSection, videoReady, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, volume, volumeOpen, playMode, playModeLabel, playlist, trackIndex, playlistOpen, currentTrack, currentTime, duration, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, toggleVolumePanel, setVolume, cyclePlayMode, selectTrack, previousTrack, nextTrack, handleTrackEnded, updateMusicTime, seekMusic, handleTrackError, formatTime, formatAmount };
+    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, videoSection, videoReady, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, volume, volumeOpen, playMode, playModeLabel, playlist, playlistId, playlistLoading, trackIndex, playlistOpen, currentTrack, currentTime, duration, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, toggleVolumePanel, setVolume, cyclePlayMode, selectTrack, previousTrack, nextTrack, handleTrackEnded, updateMusicTime, seekMusic, handleTrackError, loadPlaylistById: () => loadNetEasePlaylist(), formatTime, formatAmount };
   }
 }).mount('#app');

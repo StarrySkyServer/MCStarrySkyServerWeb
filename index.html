@@ -7,9 +7,10 @@
   <meta name="description" content="Minecraft 星空服务器官网，查看服务器状态并加入基岩版服务器。">
   <title>Minecraft 星空服务器</title>
   <link rel="icon" href="img/logo.ico">
+  <link rel="preload" as="image" href="img/bgpc.jpg" media="(min-width: 701px)">
+  <link rel="preload" as="image" href="img/bgpe.jpg" media="(max-width: 700px)">
   <link rel="preconnect" href="https://cdn.bootcdn.net" crossorigin>
   <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
-  <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.5.13/vue.global.prod.min.js" defer></script>
   <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.7.8/axios.min.js" defer></script>
@@ -102,7 +103,7 @@
       <section id="features" class="content-section full-content">
         <div class="section-heading"><div><span>QUICK ACCESS</span><h2>探索星空</h2></div><p>在这里找到冒险所需的一切</p></div>
         <div class="link-grid">
-          <a v-for="link in links" :key="link.title" :href="link.url" target="_blank" rel="noopener noreferrer" class="link-card glass">
+          <a v-for="link in links" :key="link.title" :href="link.url" :target="link.url === 'search.html' ? '_self' : '_blank'" rel="noopener noreferrer" class="link-card glass">
             <span class="link-icon">{{ link.icon }}</span><div><h3>{{ link.title }}</h3><p>{{ link.description }}</p></div><b>↗</b>
           </a>
           <button type="button" class="link-card sponsor-link glass" @click="sponsorOpen = true">
@@ -175,6 +176,10 @@
             <span class="playlist-count">{{ playlist.length }} 首</span>
             <button type="button" class="playlist-close" @click="playlistOpen = false" aria-label="关闭播放列表">×</button>
           </header>
+          <form class="playlist-config" @submit.prevent="loadPlaylistById">
+            <label for="playlist-id">网易云歌单 ID</label>
+            <div><input id="playlist-id" v-model.trim="playlistId" inputmode="numeric" placeholder="例如 2114319187" :disabled="playlistLoading"><button type="submit" :class="{ loading: playlistLoading }" :disabled="playlistLoading"><span>{{ playlistLoading ? '加载中' : '加载歌单' }}</span><i aria-hidden="true"></i></button></div>
+          </form>
           <div class="playlist-items">
             <button v-for="(track, index) in playlist" :key="`${track.name}-${index}`" type="button" class="playlist-item" :class="{ active: index === trackIndex }" @click="selectTrack(index, true)">
               <span class="track-number">{{ index === trackIndex && musicPlaying ? '▶' : String(index + 1).padStart(2, '0') }}</span>
