@@ -40,6 +40,8 @@
       const mediaQuery = matchMedia('(prefers-color-scheme: dark)');
       let hitokotoText = '';
       let manageMode = false;
+      let compactMode = localStorage.getItem('searchCompact') || '0';
+      if (!['0', '1', '2'].includes(compactMode)) compactMode = '0';
       let modalTrigger = null;
       let backgroundHistory = [localBackground];
       let backgroundIndex = 0;
@@ -65,6 +67,33 @@
         theme = themes[(themes.indexOf(theme) + 1) % themes.length];
         localStorage.setItem('theme', theme);
         applyTheme();
+      }
+      function applyCompact() {
+        const mode = Number(compactMode);
+        const app = $('app');
+        app.classList.toggle('compact', mode >= 1);
+        app.classList.toggle('compact-minimal', mode === 2);
+        document.body.classList.toggle('compact-mode', mode >= 1);
+        document.body.classList.toggle('compact-minimal', mode === 2);
+        $('compactButton').textContent = mode === 0 ? '精简' : mode === 1 ? '极简' : '展开';
+        $('compactButton').title = mode === 0 ? '切换精简显示' : mode === 1 ? '切换极简显示' : '恢复完整显示';
+      }
+      function toggleCompact() {
+        const main = $('main');
+        if (main.classList.contains('fade-out')) return;
+        let finalized = false;
+        const finalize = () => {
+          if (finalized) return;
+          finalized = true;
+          compactMode = String((Number(compactMode) + 1) % 3);
+          localStorage.setItem('searchCompact', compactMode);
+          applyCompact();
+          requestAnimationFrame(() => main.classList.remove('fade-out'));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        main.classList.add('fade-out');
+        main.addEventListener('transitionend', finalize, { once: true });
+        setTimeout(finalize, 480);
       }
 
       function updateClock() {
@@ -165,14 +194,19 @@
         modalTrigger = null;
       }
 
-       function applyBackground() { $('background').style.backgroundImage = `url("${backgroundHistory[backgroundIndex]}")`; }
+       function applyBackground() {
+         const current = backgroundHistory[backgroundIndex];
+         $('background').style.backgroundImage = current === localBackground
+           ? `url("${current}")`
+           : `url("${current}"), url("${localBackground}")`;
+       }
        async function nextBackground(silent = false) {
-        const endpoint = window.innerWidth <= 700 ? 'https://www.loliapi.com/acg/pe/?type=url' : 'https://www.loliapi.com/acg/pc/?type=url';
-        try {
-          const response = await fetch(endpoint, { cache: 'no-store' });
-          if (!response.ok) throw new Error('Background request failed');
-          const url = (await response.text()).trim();
-          if (!/^https?:\/\//i.test(url)) throw new Error('Invalid background URL');
+         const endpoint = window.innerWidth <= 700 ? 'https://www.loliapi.com/acg/pe/?type=url' : 'https://www.loliapi.com/acg/pc/?type=url';
+         try {
+           const response = await fetch(endpoint, { cache: 'no-store' });
+           if (!response.ok) throw new Error('Background request failed');
+           const url = (await response.text()).trim().replace(/^http:/i, 'https:');
+           if (!/^https?:\/\//i.test(url)) throw new Error('Invalid background URL');
           backgroundHistory = backgroundHistory.slice(0, backgroundIndex + 1).concat(url);
           backgroundIndex += 1;
           applyBackground();
@@ -396,6 +430,7 @@
       setInterval(updateClock, 1000);
       applyTheme();
       mediaQuery.addEventListener('change', applyTheme);
+      applyCompact();
       applyBackground();
       renderEngines();
       renderLinks();
@@ -475,6 +510,7 @@
         } catch (_) { showToast('请输入有效的网址'); }
       });
       $('manageButton').addEventListener('click', () => setManageMode(!manageMode));
+      $('compactButton').addEventListener('click', toggleCompact);
       $('themeButton').addEventListener('click', cycleTheme);
       $('cancelLink').addEventListener('click', closeModal);
       $('modalBackdrop').addEventListener('click', event => { if (event.target === $('modalBackdrop')) closeModal(); });

@@ -59,7 +59,7 @@
     .search-submit:hover { filter: brightness(1.08); transform: translateY(-2px); }
     .engine-menu { position: absolute; z-index: 15; top: calc(100% + 9px); left: 7px; width: 205px; max-height: min(430px, calc(100vh - 160px)); overflow-y: auto; padding: 7px; border-radius: 16px; background: var(--glass-strong); box-shadow: var(--shadow); text-align: left; scrollbar-width: thin; scrollbar-color: rgba(95,143,188,.42) transparent; }
     .engine-menu::-webkit-scrollbar { width: 5px; }
-    .engine-menu::-webkit-scrollbar-track { background: transparent; }
+    .engine-menu::-webkit-scrollbar-track { background: transparent; margin: 9px 0; }
     .engine-menu::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(95,143,188,.42); }
     .engine-menu::-webkit-scrollbar-thumb:hover { background: rgba(95,143,188,.62); }
     .engine-menu button { width: 100%; display: flex; gap: 9px; align-items: center; padding: 10px; border-radius: 10px; background: transparent; text-align: left; font-size: 13px; }
@@ -99,6 +99,12 @@
     .modal-actions .primary { color: white; background: var(--accent); }
     .toast { position: fixed; z-index: 40; top: 105px; left: 50%; padding: 10px 16px; border-radius: 12px; color: white; background: rgba(13,35,58,.88); box-shadow: var(--shadow); font-size: 12px; transform: translateX(-50%); animation: toast-in .3s both; }
     .hidden { display: none !important; }
+    .main { transition: opacity .45s ease, transform .45s cubic-bezier(.22,1,.36,1), filter .45s ease; }
+    .main.fade-out { opacity: 0; transform: translateY(18px) scale(.985); filter: blur(8px); }
+    .compact .quick-section, .compact .tip, .compact footer { display: none !important; }
+    .compact-minimal main { display: none !important; }
+    .compact-minimal .background-tint { display: none !important; background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    .compact-mode { overflow: hidden; }
 
     .utility-bar { position: fixed; z-index: 20; bottom: 18px; left: 50%; width: min(630px,calc(100vw - 28px)); display: flex; align-items: stretch; gap: 8px; transform: translateX(-50%); animation: bar-enter .7s .35s cubic-bezier(.22,1,.36,1) both; }
     .background-tools { flex: 0 0 auto; height: 48px; display: flex; align-items: center; gap: 2px; padding: 6px; border-radius: 16px; }

@@ -157,7 +157,7 @@ createApp({
       const endpoint = window.innerWidth <= 700 ? 'https://www.loliapi.com/acg/pe/?type=url' : 'https://www.loliapi.com/acg/pc/?type=url';
       try {
         const { data } = await axios.get(endpoint, { timeout: 10000, responseType: 'text' });
-        const url = String(data).trim();
+        const url = String(data).trim().replace(/^http:/i, 'https:');
         if (!/^https?:\/\//i.test(url)) throw new Error('Invalid background URL');
         backgroundHistory.value = backgroundHistory.value.slice(0, backgroundIndex.value + 1).concat(url);
         backgroundIndex.value += 1;
@@ -336,6 +336,6 @@ createApp({
       if (event.key === 'Escape') sponsorOpen.value = false;
     }
 
-    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, videoSection, videoReady, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, volume, volumeOpen, playMode, playModeLabel, playlist, playlistId, playlistLoading, trackIndex, playlistOpen, currentTrack, currentTime, duration, serverStatus, links, backgroundUrl, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, toggleVolumePanel, setVolume, cyclePlayMode, selectTrack, previousTrack, nextTrack, handleTrackEnded, updateMusicTime, seekMusic, handleTrackError, loadPlaylistById: () => loadNetEasePlaylist(), formatTime, formatAmount };
+    return { serverHost, serverPort, minecraftUrl, sponsors, sponsorOpen, videoSection, videoReady, copied, compact, themeLabel, themeIcon, toast, audio, musicPlaying, volume, volumeOpen, playMode, playModeLabel, playlist, playlistId, playlistLoading, trackIndex, playlistOpen, currentTrack, currentTime, duration, serverStatus, links, backgroundImage, cycleTheme, toggleCompact, copyAddress, nextBackground, previousBackground, downloadBackground, toggleMusic, toggleVolumePanel, setVolume, cyclePlayMode, selectTrack, previousTrack, nextTrack, handleTrackEnded, updateMusicTime, seekMusic, handleTrackError, loadPlaylistById: () => loadNetEasePlaylist(), formatTime, formatAmount };
   }
 }).mount('#app');

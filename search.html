@@ -17,12 +17,13 @@
     <header class="topbar glass">
       <a class="brand" href="search.html" aria-label="星空起始页首页"><img src="img/Starry sky logo air.png" alt="星空 Logo"><span>星空起始页</span></a>
       <div class="top-actions">
+        <button class="icon-btn" id="compactButton" type="button" title="切换精简显示">精简</button>
         <button class="icon-btn" id="manageButton" type="button" title="开启管理模式" aria-pressed="false">⚙ <span class="label">管理</span></button>
         <button class="icon-btn theme-button" id="themeButton" type="button" title="当前主题：自动"><span id="themeIcon" aria-hidden="true">◐</span><span class="theme-label" id="themeLabel">自动</span></button>
       </div>
     </header>
 
-    <main class="main">
+    <main class="main" id="main">
       <section class="hero" aria-label="搜索区域">
         <p class="date" id="dateText"></p>
         <h1 class="clock" id="clock">00:00</h1>
