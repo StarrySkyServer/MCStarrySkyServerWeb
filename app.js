@@ -9,7 +9,7 @@ const MUSIC_CONFIG = {
 createApp({
   setup() {
     const serverHost = 'mc.szzz666.top';
-    const serverPort = '19132';
+    const serverPort = '44966';
     const minecraftUrl = `minecraft://?addExternalServer=MC%20Starry%20Sky|${serverHost}:${serverPort}`;
     // file:// pages cannot request local JSON, so keep a useful built-in fallback.
     const sponsors = ref([
